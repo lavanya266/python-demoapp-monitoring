@@ -1,16 +1,19 @@
-FROM python:3.9-slim-buster
+# Use the official Python image as the base image
+FROM python:3.9-slim
 
-LABEL Name="Python Flask Demo App" Version=1.4.2
-LABEL org.opencontainers.image.source = "https://github.com/benc-uk/python-demoapp"
-
-ARG srcDir=src
+# Set the working directory inside the container
 WORKDIR /app
-COPY $srcDir/requirements.txt .
+
+# Copy the requirements file to the working directory
+COPY src/requirements.txt ./
+
+# Install the dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY $srcDir/run.py .
-COPY $srcDir/app ./app
+# Copy the entire project into the container
+COPY src/. .
 
+# Expose the port your Flask app is running on (default Flask port is 5000)
 EXPOSE 5000
 
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "run:app"]
+CMD ["pyhton", "run.py"]
