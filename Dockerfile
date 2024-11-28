@@ -1,19 +1,26 @@
-# Use the official Python image as the base image
 FROM python:3.9-slim
 
-# Set the working directory inside the container
+# Set the working directory
 WORKDIR /app
 
-# Copy the requirements file to the working directory
+# Copy only the requirements file initially
 COPY src/requirements.txt ./
 
-# Install the dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install necessary build tools and Python headers
+RUN apt-get update && apt-get install -y \
+    gcc \
+    python3-dev \
+    --no-install-recommends && \
+    pip install --no-cache-dir -r requirements.txt && \
+    apt-get remove -y gcc python3-dev && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy the entire project into the container
-COPY src/. .
+# Copy the application code
+COPY src/ .
 
-# Expose the port your Flask app is running on (default Flask port is 5000)
+# Expose the application port
 EXPOSE 5000
 
-CMD ["pyhton", "run.py"]
+# Define the entrypoint
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
